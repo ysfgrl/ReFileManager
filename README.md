@@ -3,7 +3,7 @@
 
 ## About The Project
 
-Bu proje yüz tanıma ve vucut sıcaklığına dayalı bir covid-19 tespit sistemidir
+ReFileManager is written using javascript and php. You can easily delete, upload, download and list files. It can be easily integrated into your project :)
 
 
 ![screenshot](screenshot/Screenshot1.png)
