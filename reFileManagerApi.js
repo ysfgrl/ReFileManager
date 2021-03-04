@@ -1,4 +1,6 @@
-
+/**
+ * FileManagerApi
+ */
 class FileManagerApi{
 
     static Language = {
@@ -17,7 +19,9 @@ class FileManagerApi{
             ReCurrentPath: "Klasör : ",
             ReSuccessMessage: "İşlem Başarılı ",
             ReErrorMessage: "İşlem Başarılısız ",
-            ReIsExistFile: "Bu Dosya veya Klasör Mevcut "
+            ReIsExistFile: "Bu Dosya veya Klasör Mevcut ",
+            ReFileClose: "Kapat",
+            ReFileSelect: "Seç"
 
         },
         en:{
@@ -34,32 +38,51 @@ class FileManagerApi{
             ReCurrentPath: "Folder : ",
             ReSuccessMessage: "Successful Operation",
             ReErrorMessage: "Operation Failed ",
-            ReIsExistFile: "this file or folder exists "
+            ReIsExistFile: "this file or folder exists ",
+            ReFileClose: "Close",
+            ReFileSelect: "Select"
         },
     }
 
     locale;
     currentPath = "/";
+    isEmbedded;
     currentFileList = [];
     selectedFiles = [];
     contentId = "";
     url = "";
     token = "token";
     template = "";
+    modalTemplate = "";
+    reFileManagerModal;
+    reFileManagerCallBack;
 
 
     /**
      * @param {string} url
      * @param {string} contentId
      * @param {string} locale
+     * @param {boolean} isEmbedded
+     * @param {selectedFile} callback
      */
-    constructor(url,contentId,locale = "tr") {
+    constructor(url,contentId,locale, isEmbedded = true, callback = null) {
         this.url = url;
         this.contentId = contentId;
         this.locale = locale;
-        this.template = Template.createTemplate();
-        $.each(FileManagerApi.Language[this.locale], (key,value) => this.translate(key, value));
-        $("#"+contentId).html(this.template);
+        this.isEmbedded = false;
+        this.reFileManagerCallBack = callback;
+        if(isEmbedded){
+            this.template = Template.createTemplate();
+            $.each(FileManagerApi.Language[this.locale], (key,value) => this.translate(key, value));
+            $("#"+contentId).html(this.template);
+        }else{
+            this.template = Template.createTemplateModal();
+            this.modalTemplate = Template.templateModal;
+            $.each(FileManagerApi.Language[this.locale], (key,value) => this.translate(key, value));
+            $("#"+contentId).html(this.template);
+            this.reFileManagerModal = new bootstrap.Modal(document.getElementById('reFileManagerModal'))
+            this.reFileManagerModal.hide();
+        }
         $("#fileUploadReProgress").parent().hide();
         $(document).on("click",'[id="searchReFile"]', event => this.searchFile(event));
         $(document).on("click",'[id="uploadNewReFile"]', event => this.uploadFile(event));
@@ -71,13 +94,40 @@ class FileManagerApi{
         $(document).on("click",'[id="createNewReFolder"]',event => this.createFolder(event));
         $(document).on("click",'[id="backReFile"]',event => this.backFile(event));
         $(document).on("click",'[id="refreshReFile"]',event => this.refreshFile(event));
+        $(document).on("click",'[id="selectReFileManager"]',event => this.selectFileManager(event))
+        $(document).on("click",'[id="closeReFileManager"]',event => this.closeFileManager(event))
     }
 
 
+    /**
+     * @param {string} key
+     * @param {string|((substring: string, ...args: any[]) => string)} value
+     */
     translate(key, value){
         this.template = this.template.replaceAll("@"+key,value);
     }
 
+    openFileManager(event){
+        event.preventDefault();
+        this.reFileManagerModal.show();
+    }
+
+    closeFileManager(event){
+        event.preventDefault();
+        this.reFileManagerModal.hide();
+    }
+    selectFileManager(event){
+        event.preventDefault();
+        this.reFileManagerModal.hide();
+        if(this.reFileManagerCallBack != null){
+            if(this.selectedFiles.length > 0){
+                var fileInfo = this.findFileById(this.selectedFiles[0]);
+                this.reFileManagerCallBack(fileInfo);
+            }else{
+                this.reFileManagerCallBack(null);
+            }
+        }
+    }
     /**
      * @param {string} type // success, warning, info, error
      * @param {string} title
@@ -284,6 +334,9 @@ class FileManagerApi{
         $("#templateContent").html(template);
     }
 
+    /**
+     * @param {string} id
+     */
     findFileById(id){
         var fileInfo;
         this.currentFileList.forEach((value, index) => {
@@ -294,11 +347,10 @@ class FileManagerApi{
         });
         return fileInfo;
     }
-    /**
-     * @param {string} username
-     * @param {string} password
-     */
 
+    /**
+     *
+     */
     refreshFileList(){
         this.selectedFiles = [];
         $("#fileItemContent").html("");
@@ -363,6 +415,10 @@ class FileManagerApi{
         console.log(result);
 
     }
+
+    /**
+     * @param {string} path
+     */
     getFileList(path){
         var result = this.ajaxPostSync("getFileList",{path:path});
         if(result.status){
@@ -373,6 +429,9 @@ class FileManagerApi{
         this.refreshFileList();
     }
 
+    /**
+     * @param {string} path
+     */
     getParentFileList(path){
         var result = this.ajaxPostSync("getParentFileList",{path:path});
         if(result.status){
@@ -383,6 +442,10 @@ class FileManagerApi{
         this.refreshFileList();
     }
 
+    /**
+     * @param {string} endpoint
+     * @param {{}|{password: string, username: string}|{path: string}} params
+     */
     ajaxPostSync(endpoint, params){
         var result;
         $.ajax(
@@ -408,39 +471,6 @@ class FileManagerApi{
     }
 
 
-
-    postForm() {
-        $("#form-upload").ajaxSubmit({
-            beforeSubmit:function (formData, formObject, formOptions) {
-                $("#fileprogresscontent").show();
-            },
-            beforeSend : function (){
-                console.log("beforeSend");
-            },
-            uploadProgress : function (event, position, total, percentComplate) {
-                $("#fileprogress").css("width",percentComplate+"%");
-                $("#fileprogress").html(percentComplate+"%");
-            },
-            success :function (response){
-                $("#fileprogresscontent").hide();
-                var res = JSON.parse(response);
-                $(document).Toasts('create',
-                    {
-                        title: res[0].type,
-                        class: 'bg-'+res[0].type,
-                        position: 'topRight',
-                        autohide: true,
-                        delay: 2500,
-                        body: res[0].message
-                    });
-
-                setTimeout(function () {
-                    window.location.href = window.location.href;
-                },1500);
-            }
-        });
-    }
-
 }
 
 class Template{
@@ -451,6 +481,15 @@ class Template{
         temp = temp.replaceAll("@ToolTemplate", Template.templateTool);
         temp = temp.replaceAll("@AlertTemplate", Template.templateAlertContent);
         return temp;
+    }
+
+    static createTemplateModal() {
+        var  temp = Template.template.replaceAll("@FileInfoTemplate", Template.templateFileInfo);
+        temp = temp.replaceAll("@NavbarTemplate", Template.templatePathInfo);
+        temp = temp.replaceAll("@ToolTemplate", Template.templateTool);
+        temp = temp.replaceAll("@AlertTemplate", Template.templateAlertContent);
+        var tempModal = this.templateModal.replaceAll("@ReFileManagerModalContent",temp);
+        return tempModal;
     }
     static template =
         `
@@ -477,7 +516,7 @@ class Template{
                 </div>
                 @AlertTemplate
             </div>
-            <div class="card-footer text-muted">
+            <div class="card-footer text-muted p-1">
                 Ysfgrl@2021
             </div>
         </div>
@@ -634,6 +673,22 @@ class Template{
                 </div>
             </div>
         
+        `;
+    static templateModal =
+        `
+        <div class="modal show" id="reFileManagerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-fullscreen-lg-down">
+                <div class="modal-content">
+                    <div class="modal-body" id="reFileManagerModalBody">
+                        @ReFileManagerModalContent
+                    </div>
+                    <div class="modal-footer">
+                        <a type="button" id="closeReFileManager" class="btn btn-secondary">@ReFileClose</a>
+                        <a type="button" id="selectReFileManager" class="btn btn-primary">@ReFileSelect</a>
+                    </div>
+                </div>
+            </div>
+        </div>
         `;
 }
 

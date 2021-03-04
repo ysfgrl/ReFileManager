@@ -28,9 +28,7 @@ ReFileManager is written using javascript and php. You can easily delete, upload
 
 ## How To Use
 
-This is an example of how to list things you need to use the software and how to install them.
-    
-* Html code
+* Embedded using
 ```
 <html>
 <head>
@@ -44,14 +42,6 @@ This is an example of how to list things you need to use the software and how to
     <script src="reFileManagerApi.js"></script>
     
 </head>
-<div id="fileManager">
-    
-</div>
-
-```
-
-* Javascript code
-```
 <script type="text/javascript">
 
 $(document).ready(function(){
@@ -59,13 +49,77 @@ $(document).ready(function(){
     var language = "tr";
     var contentId = "fileManager";
     var fileManagerRestUrl = "http://yourdomain/api.php";
-    var api = new FileManagerApi(fileManagerRestUrl, contentId, locale);
+    var api = new FileManagerApi(fileManagerRestUrl, contentId, language);
     api.getFileList("/");
     
 });
     
 </script>
+<body>
+<div id="fileManager">
+    
+</div>
+</body>
+</html>
+```
 
+* Modal use for Select File
+```
+<html>
+<head>
+
+    <link rel="stylesheet" href="fontawesome-free">
+    <link rel="stylesheet" href="bootstrap">
+    
+    <script src="jquery"></script>
+    <script src="bootstrap"></script>
+    <script src="jquery.form"></script>
+    <script src="reFileManagerApi.js"></script>
+    
+</head>
+<body>
+
+<form>
+    <div class="form-row">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">
+                    SelectFile
+                </div>
+            </div>
+            <input type="text" class="form-control" id="selectedFile">
+            <div class="input-group-append">
+                <input type="button" value="Select File" id="openFileManager">
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="container" id="fileManager">
+
+
+</div>
+<script>
+$(document).ready(function(){
+    var language = "tr";
+    var contentId = "fileManager";
+    var fileManagerRestUrl = "http://192.168.2.15/FileManeger/api.php";
+    var api = new FileManagerApi(fileManagerRestUrl, contentId, language,false,selectedFile);
+    api.getFileList("/");
+    $(document).on("click",'[id="openFileManager"]',function (event){
+        api.openFileManager(event);
+    });
+
+});
+function selectedFile(fileInfo) {
+    $("#selectedFile").val(fileInfo.path);
+}
+    
+});
+    
+</script>
+</body>
+</html>
 ```
 
 

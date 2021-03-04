@@ -50,6 +50,10 @@ class Api {
         $this->response["token"] = "newToken";
     }
 
+    /**
+     * @param $params array
+     *
+     */
     private function getFileList($params){
 
         $path = $params["path"];
