@@ -67,3 +67,9 @@ $(document).ready(function(){
 </script>
 
 ```
+
+
+## Authors
+
+1. Yusuf Uğurlu
+2. Onur Ağtas
