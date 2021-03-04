@@ -72,4 +72,4 @@ $(document).ready(function(){
 ## Authors
 
 1. Yusuf Uğurlu
-2. Onur Ağtas
+2. Onur Ağtaş https://github.com/onuragtas
