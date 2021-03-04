@@ -6,7 +6,8 @@
 Bu proje yüz tanıma ve vucut sıcaklığına dayalı bir covid-19 tespit sistemidir
 
 
-![screenshot](screenshot/Screenshot1.png | width=400)
+![screenshot](screenshot/Screenshot1.png)
+
 ![screenshot](screenshot/Screenshot.png)
 
 ## Dependency
